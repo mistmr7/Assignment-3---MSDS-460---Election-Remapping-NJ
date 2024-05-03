@@ -1,6 +1,7 @@
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import glpk
 
 pd.set_option("display.max_rows", 50)
 pd.set_option("display.max_columns", None)
@@ -28,8 +29,10 @@ from pulp import (
     GLPK_CMD,
     LpStatus,
     value,
+    listSolvers,
 )
 
+print(listSolvers(onlyAvailable=True))
 # Arbitrary County IDs
 county_id = np.arange(0, 21)
 
@@ -183,6 +186,7 @@ county_2020_rep_voting = [
     57.2,
 ]
 
+# Create initial DataFrame of County Information
 county_info = pd.DataFrame(
     {
         "County_ID": county_id,
@@ -195,3 +199,194 @@ county_info = pd.DataFrame(
         "Longitude": [county[1] for county in county_lat_long],
     }
 )
+
+df_county_names = pd.DataFrame(county_names, columns=["County"])
+df = pd.DataFrame()
+df["County"] = county_names
+df["CountySort"] = county_id
+
+shapefile_new_jersey = gpd.read_file("us-county-boundaries.shp")
+
+map_population_by_county_data = shapefile_new_jersey.merge(
+    county_info,
+    left_on="name",
+    right_on="County_Name",
+    suffixes=("_left", "_right"),
+)
+county_populations = np.array(county_info.Population)
+state_population = sum(county_populations)
+print(county_info)
+
+n_counties = 21
+n_districts = 12
+variable_names = [
+    str(i) + str(j) for j in range(1, n_districts + 1) for i in range(1, n_counties + 1)
+]
+variable_names.sort()
+
+population_split = 582554
+min_dist = 582554
+max_dist = 970923
+
+# Create the model and choose whether to minimize or maximize
+model = LpProblem("Supply-Demand-Problem", LpMinimize)
+
+# Declare Variables
+# The Decision Variable is 1 if the county is assigned to the district.
+DV_variable_y = LpVariable.matrix("Y", variable_names, cat="Binary")
+assignment = np.array(DV_variable_y).reshape(21, 12)
+
+# The Decision Variable is the population allocated to the district.
+DV_variable_x = LpVariable.matrix("X", variable_names, cat="Integer", lowBound=0)
+allocation = np.array(DV_variable_x).reshape(21, 12)
+
+# Write the objective
+objective_function = lpSum(assignment)
+model += objective_function
+
+# Constraints
+
+# Allocate 100% of the population from each county.
+for i in range(n_counties):
+    model += (
+        lpSum(allocation[i][j] for j in range(n_districts)) == county_populations[i],
+        "Allocate All " + str(i),
+    )
+
+# This constraint makes assignment required for allocation.
+# sum(county_populations) is the "big M"
+for i in range(n_counties):
+    for j in range(n_districts):
+        model += (
+            allocation[i][j] <= sum(county_populations) * assignment[i][j],
+            "Allocation assignment " + str(i) + " " + str(j),
+        )
+
+for j in range(n_districts):
+    model += (
+        assignment[0][j]
+        <= assignment[2][j]
+        + assignment[3][j]
+        + assignment[4][j]
+        + assignment[5][j]
+        + assignment[7][j]
+        + assignment[14][j]
+    )
+    model += assignment[1][j] <= assignment[6][j] + assignment[8][j] + assignment[15][j]
+    model += (
+        assignment[2][j]
+        <= assignment[0][j]
+        + assignment[3][j]
+        + assignment[10][j]
+        + assignment[12][j]
+        + assignment[14][j]
+    )
+    model += assignment[3][j] <= assignment[0][j] + assignment[2][j] + assignment[7][j]
+    model += assignment[4][j] <= assignment[0][j] + assignment[5][j]
+    model += (
+        assignment[5][j]
+        <= assignment[0][j] + assignment[4][j] + assignment[7][j] + assignment[16][j]
+    )
+    model += (
+        assignment[6][j]
+        <= assignment[1][j]
+        + assignment[8][j]
+        + assignment[13][j]
+        + assignment[15][j]
+        + assignment[19][j]
+    )
+    model += (
+        assignment[7][j]
+        <= assignment[0][j] + assignment[3][j] + assignment[5][j] + assignment[16][j]
+    )
+    model += assignment[8][j] <= assignment[1][j] + assignment[6][j] + assignment[19][j]
+    model += (
+        assignment[9][j]
+        <= assignment[10][j] + assignment[13][j] + assignment[17][j] + assignment[20][j]
+    )
+    model += (
+        assignment[10][j]
+        <= assignment[2][j]
+        + assignment[9][j]
+        + assignment[11][j]
+        + assignment[12][j]
+        + assignment[17][j]
+    )
+    model += (
+        assignment[11][j]
+        <= assignment[10][j] + assignment[12][j] + assignment[17][j] + assignment[19][j]
+    )
+    model += (
+        assignment[12][j]
+        <= assignment[2][j] + assignment[10][j] + assignment[11][j] + assignment[14][j]
+    )
+    model += (
+        assignment[13][j]
+        <= assignment[6][j]
+        + assignment[9][j]
+        + assignment[15][j]
+        + assignment[17][j]
+        + assignment[18][j]
+        + assignment[19][j]
+        + assignment[20][j]
+    )
+    model += (
+        assignment[14][j] <= assignment[0][j] + assignment[2][j] + assignment[12][j]
+    )
+    model += (
+        assignment[15][j]
+        <= assignment[1][j] + assignment[6][j] + assignment[13][j] + assignment[18][j]
+    )
+    model += assignment[16][j] <= assignment[5][j] + assignment[7][j]
+    model += (
+        assignment[17][j]
+        <= assignment[9][j]
+        + assignment[10][j]
+        + assignment[11][j]
+        + assignment[13][j]
+        + assignment[19][j]
+    )
+    model += (
+        assignment[18][j] <= assignment[13][j] + assignment[15][j] + assignment[20][j]
+    )
+    model += (
+        assignment[19][j]
+        <= assignment[6][j]
+        + assignment[8][j]
+        + assignment[11][j]
+        + assignment[13][j]
+        + assignment[17][j]
+    )
+    model += (
+        assignment[20][j] <= assignment[9][j] + assignment[13][j] + assignment[18][j]
+    )
+
+
+# District size constraints, in order to keep the size of districts by population similar
+for j in range(n_districts):
+    model += (
+        lpSum(allocation[i][j] for i in range(n_counties)) <= max_dist,
+        "District Size Maximum " + str(j),
+    )
+    model += (
+        lpSum(allocation[i][j] for i in range(n_counties)) >= min_dist,
+        "District Size Minimum " + str(j),
+    )
+
+# Only allow counties that meet certain critera to be split among multiple districts
+# A county must have population > population_split to be split among up to two districts
+for i in range(n_counties):  # added
+    if county_populations[i] <= population_split:
+        model += (
+            lpSum(assignment[i][j] for j in range(n_districts)) <= 1,
+            "Unique Assignment " + str(i),
+        )
+    else:
+        model += (
+            lpSum(assignment[i][j] for j in range(n_districts)) <= 2,
+            "Up-to-two Assignments " + str(i),
+        )
+
+model.solve(GLPK_CMD(options=["--mipgap", "0.055", "--gomory"]))
+print("The model status is: ", LpStatus[model.status])
+print("The objective value is: ", value(objective_function))
