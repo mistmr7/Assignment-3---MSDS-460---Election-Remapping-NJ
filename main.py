@@ -182,3 +182,16 @@ county_2020_rep_voting = [
     31.6,
     57.2,
 ]
+
+county_info = pd.DataFrame(
+    {
+        "County_ID": county_id,
+        "County_Name": county_names,
+        "Population": county_populations,
+        "White_Percentage": county_percent_white,
+        "Democratic_Voting": county_2020_dem_voting,
+        "Republican_Voting": county_2020_rep_voting,
+        "Latitude": [county[0] for county in county_lat_long],
+        "Longitude": [county[1] for county in county_lat_long],
+    }
+)
