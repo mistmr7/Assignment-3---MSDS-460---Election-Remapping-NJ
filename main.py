@@ -220,13 +220,15 @@ print(county_info)
 n_counties = 21
 n_districts = 12
 variable_names = [
-    str(i) + str(j) for j in range(1, n_districts + 1) for i in range(1, n_counties + 1)
+    str(i) + "A" + str(j)
+    for j in range(1, n_districts + 1)
+    for i in range(1, n_counties + 1)
 ]
 variable_names.sort()
 
-population_split = 582554
-min_dist = 582554
-max_dist = 970923
+population_split = 388369
+min_dist = 388369
+max_dist = 1165108
 
 # Create the model and choose whether to minimize or maximize
 model = LpProblem("Supply-Demand-Problem", LpMinimize)
@@ -390,3 +392,150 @@ for i in range(n_counties):  # added
 model.solve(GLPK_CMD(options=["--mipgap", "0.055", "--gomory"]))
 print("The model status is: ", LpStatus[model.status])
 print("The objective value is: ", value(objective_function))
+
+# Access the results
+for i in range(n_counties):
+    for j in range(n_districts):
+        if allocation[i][j].value() > 0:
+            print(
+                "County %d assigned to district %d: " % (i, j), allocation[i][j].value()
+            )
+
+# Prepare data for visualizing the results
+result_value = []
+for i in range(n_counties):
+    for j in range(n_districts):
+        var_output = {
+            "County": i,
+            "District": j + 1,
+            "Assignment": int(assignment[i][j].value() * (j + 1)),
+            "Allocation": allocation[i][j].value(),
+        }
+        result_value.append(var_output)
+
+results = pd.DataFrame(result_value)
+results = results[results["Assignment"] != 0]
+results = results.sort_values(["County", "District"])
+results = results.merge(
+    df, left_on="County", right_on="CountySort", suffixes=("_ID", "_Name")
+)
+results["Multiple_County_Name"] = results["County_Name"].shift(periods=1)
+results["Multiple_District"] = (
+    results["District"].shift(periods=1).fillna(99).astype(int)
+)
+
+# Edit the assignment for the case when a county has multiple assignments
+for i in range(0, len(results)):
+    if results["County_Name"].loc[i] == results["Multiple_County_Name"].loc[i]:
+        results.loc[i, "Assignment"] = int(
+            str(results["District"].loc[i]) + str(results["Multiple_District"].loc[i])
+        )
+results = results.sort_values(["District", "County_Name"])
+results.index = results["County_ID"]
+
+color_dict = {
+    1: "khaki",
+    2: "pink",
+    3: "mediumaquamarine",
+    4: "plum",
+    5: "paleturquoise",
+    6: "lightcoral",
+    7: "orange",
+    8: "yellow",
+    9: "red",
+    10: "blue",
+    11: "green",
+    12: "grey",
+}
+
+
+def nj_map(map_data):
+    """
+    Create three maps to visualize the results.
+    (1) A map with population labels
+    (2) A map with county labels
+    (3) A map with county IDs
+    """
+
+    plot_map_population_labels = (
+        ggplot(map_data)
+        + geom_map(aes(fill=str("Assignment")))
+        + geom_label(
+            aes(x="Longitude", y="Latitude", label="Population2020e", size=2),
+            show_legend=False,
+        )
+        + theme_minimal()
+        + theme(
+            axis_text_x=element_blank(),
+            axis_text_y=element_blank(),
+            axis_title_x=element_blank(),
+            axis_title_y=element_blank(),
+            axis_ticks=element_blank(),
+            panel_grid_major=element_blank(),
+            panel_grid_minor=element_blank(),
+            figure_size=(7, 4),
+        )
+        + scale_fill_manual(values=color_dict)
+    )
+
+    plot_map_county_labels = (
+        ggplot(map_data)
+        + geom_map(aes(fill=str("Assignment")))
+        + geom_label(
+            aes(x="Longitude", y="Latitude", label="County_Name_left", size=2),
+            show_legend=False,
+        )
+        + theme_minimal()
+        + theme(
+            axis_text_x=element_blank(),
+            axis_text_y=element_blank(),
+            axis_title_x=element_blank(),
+            axis_title_y=element_blank(),
+            axis_ticks=element_blank(),
+            panel_grid_major=element_blank(),
+            panel_grid_minor=element_blank(),
+            figure_size=(7, 4),
+        )
+        + scale_fill_manual(values=color_dict)
+    )
+
+    plot_map_county_ids = (
+        ggplot(map_data)
+        + geom_map(aes(fill=str("Assignment")))
+        + geom_label(
+            aes(x="Longitude", y="Latitude", label="County_ID", size=5),
+            show_legend=False,
+        )
+        + theme_minimal()
+        + theme(
+            axis_text_x=element_blank(),
+            axis_text_y=element_blank(),
+            axis_title_x=element_blank(),
+            axis_title_y=element_blank(),
+            axis_ticks=element_blank(),
+            panel_grid_major=element_blank(),
+            panel_grid_minor=element_blank(),
+            figure_size=(7, 4),
+        )
+        + scale_fill_manual(values=color_dict)
+    )
+
+    return plot_map_population_labels, plot_map_county_labels, plot_map_county_ids
+
+
+map_first_pass = shapefile_new_jersey.merge(
+    results, left_on="name", right_on="County_Name", suffixes=("_left", "_right")
+)
+map_first_pass["District"] = map_first_pass["District"] + 1
+map_first_pass_labels = map_first_pass.merge(
+    county_info,
+    left_on="County_ID",
+    right_on="County_ID",
+    suffixes=("_left", "_right"),
+)
+map_first_pass_labels["District"] = map_first_pass_labels["District"].astype("category")
+map_first_pass_labels["Assignment"] = map_first_pass_labels["Assignment"].astype(
+    "category"
+)
+
+nj_map(map_first_pass_labels)
