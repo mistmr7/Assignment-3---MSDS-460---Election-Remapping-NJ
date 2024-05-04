@@ -200,6 +200,8 @@ county_info = pd.DataFrame(
     }
 )
 
+print(county_info)
+
 df_county_names = pd.DataFrame(county_names, columns=["County"])
 df = pd.DataFrame()
 df["County"] = county_names
@@ -265,6 +267,7 @@ for i in range(n_counties):
         )
 
 for j in range(n_districts):
+    # Atlantic County borders Burlington[2], Camden[3], Cape May[4], Cumberland[5], Gloucester[7], and Ocean[14]
     model += (
         assignment[0][j]
         <= assignment[2][j]
@@ -274,7 +277,9 @@ for j in range(n_districts):
         + assignment[7][j]
         + assignment[14][j]
     )
+    # Bergen County borders Essex[6], Hudson[8], and Passaic[15]
     model += assignment[1][j] <= assignment[6][j] + assignment[8][j] + assignment[15][j]
+    # Burlington County borders Atlantic[0], Camden[3], Mercer[10], Monmouth[12], and Ocean[14]
     model += (
         assignment[2][j]
         <= assignment[0][j]
@@ -283,12 +288,16 @@ for j in range(n_districts):
         + assignment[12][j]
         + assignment[14][j]
     )
+    # Camden County borders Atlantic[0], Burlington[2], and Gloucester[7]
     model += assignment[3][j] <= assignment[0][j] + assignment[2][j] + assignment[7][j]
+    # Cape May County borders Atlantic[0] and Cumberland[5]
     model += assignment[4][j] <= assignment[0][j] + assignment[5][j]
+    # Cumberland County borders Atlantic[0], Cape May[4], Gloucester[7], and Salem[16]
     model += (
         assignment[5][j]
         <= assignment[0][j] + assignment[4][j] + assignment[7][j] + assignment[16][j]
     )
+    # Essex County borders Bergen[1], Hudson[8], Morris[13], Passaic[15], and Union[19]
     model += (
         assignment[6][j]
         <= assignment[1][j]
@@ -297,15 +306,19 @@ for j in range(n_districts):
         + assignment[15][j]
         + assignment[19][j]
     )
+    # Gloucester County borders Atlantic[0], Camden[3], Cumberland[5], and Salem[16]
     model += (
         assignment[7][j]
         <= assignment[0][j] + assignment[3][j] + assignment[5][j] + assignment[16][j]
     )
+    # Hudson County borders Bergen[1], Essex[6], and Union[19]
     model += assignment[8][j] <= assignment[1][j] + assignment[6][j] + assignment[19][j]
+    # Hunterdon County borders Mercer[10], Morris[13], Somerset[17], and Warren[20]
     model += (
         assignment[9][j]
         <= assignment[10][j] + assignment[13][j] + assignment[17][j] + assignment[20][j]
     )
+    # Mercer county borders Burlington[2], Hunterdon[9], Middlesex[11], Monmouth[12], and Somerset[17]
     model += (
         assignment[10][j]
         <= assignment[2][j]
@@ -314,14 +327,17 @@ for j in range(n_districts):
         + assignment[12][j]
         + assignment[17][j]
     )
+    # Middlesex county borders Mercer[10], Monmouth[12], Somerset[17], and Union[19]
     model += (
         assignment[11][j]
         <= assignment[10][j] + assignment[12][j] + assignment[17][j] + assignment[19][j]
     )
+    # Monmouth County borders Burlington[2], Mercer[10], Middlesex[11], and Ocean[14]
     model += (
         assignment[12][j]
         <= assignment[2][j] + assignment[10][j] + assignment[11][j] + assignment[14][j]
     )
+    # Morris County borders Essex[6], Hunterdon[9], Passaic[15], Somerset[17], Sussex[18], Union[19], and Warren[20]
     model += (
         assignment[13][j]
         <= assignment[6][j]
@@ -332,14 +348,18 @@ for j in range(n_districts):
         + assignment[19][j]
         + assignment[20][j]
     )
+    # Ocean County borders Atlantic[0], Burlington[2], and Monmouth[12]
     model += (
         assignment[14][j] <= assignment[0][j] + assignment[2][j] + assignment[12][j]
     )
+    # Passaic County borders Bergen[1], Essex[6], Morris[13], and Sussex[18]
     model += (
         assignment[15][j]
         <= assignment[1][j] + assignment[6][j] + assignment[13][j] + assignment[18][j]
     )
+    # Salem County borders Cumberland[5] and Gloucester[7]
     model += assignment[16][j] <= assignment[5][j] + assignment[7][j]
+    # Somerset County borders Hunterdon[9], Mercer[10], Middlesex[11], Morris[13], and Union[19]
     model += (
         assignment[17][j]
         <= assignment[9][j]
@@ -348,9 +368,11 @@ for j in range(n_districts):
         + assignment[13][j]
         + assignment[19][j]
     )
+    # Sussex County borders Morris[13], Passaic[15], and Warren[20]
     model += (
         assignment[18][j] <= assignment[13][j] + assignment[15][j] + assignment[20][j]
     )
+    # Union County borders Essex[6], Hudson[8], Middlesex[11], Morris[13], and Somerset[17]
     model += (
         assignment[19][j]
         <= assignment[6][j]
@@ -359,6 +381,7 @@ for j in range(n_districts):
         + assignment[13][j]
         + assignment[17][j]
     )
+    # Warren County borders Hunterdon[9], Morris[13], and Sussex[18]
     model += (
         assignment[20][j] <= assignment[9][j] + assignment[13][j] + assignment[18][j]
     )
@@ -450,12 +473,10 @@ color_dict = {
 
 
 def nj_map(map_data):
-    """
-    Create three maps to visualize the results.
-    (1) A map with population labels
-    (2) A map with county labels
-    (3) A map with county IDs
-    """
+    # Create three maps to visualize the results.
+    # (1) A map with population labels
+    # (2) A map with county labels
+    # (3) A map with county IDs
 
     plot_map_population_labels = (
         ggplot(map_data)
