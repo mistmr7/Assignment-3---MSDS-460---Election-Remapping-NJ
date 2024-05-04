@@ -200,7 +200,6 @@ county_info = pd.DataFrame(
     }
 )
 
-print(county_info)
 
 df_county_names = pd.DataFrame(county_names, columns=["County"])
 df = pd.DataFrame()
@@ -217,7 +216,7 @@ map_population_by_county_data = shapefile_new_jersey.merge(
 )
 county_populations = np.array(county_info.Population)
 state_population = sum(county_populations)
-print(county_info)
+
 
 n_counties = 21
 n_districts = 12
@@ -226,11 +225,13 @@ variable_names = [
     for j in range(1, n_districts + 1)
     for i in range(1, n_counties + 1)
 ]
-variable_names.sort()
+# variable_names.sort()
+# print(variable_names)
 
-population_split = 388369
-min_dist = 388369
-max_dist = 1165108
+# population_split = 130000
+min_dist = 522554
+max_dist = 970923
+
 
 # Create the model and choose whether to minimize or maximize
 model = LpProblem("Supply-Demand-Problem", LpMinimize)
@@ -238,12 +239,14 @@ model = LpProblem("Supply-Demand-Problem", LpMinimize)
 # Declare Variables
 # The Decision Variable is 1 if the county is assigned to the district.
 DV_variable_y = LpVariable.matrix("Y", variable_names, cat="Binary")
+print(DV_variable_y)
 assignment = np.array(DV_variable_y).reshape(21, 12)
 
 # The Decision Variable is the population allocated to the district.
 DV_variable_x = LpVariable.matrix("X", variable_names, cat="Integer", lowBound=0)
 allocation = np.array(DV_variable_x).reshape(21, 12)
-
+print(allocation)
+print(assignment)
 # Write the objective
 objective_function = lpSum(assignment)
 model += objective_function
@@ -401,18 +404,18 @@ for j in range(n_districts):
 # Only allow counties that meet certain critera to be split among multiple districts
 # A county must have population > population_split to be split among up to two districts
 for i in range(n_counties):  # added
-    if county_populations[i] <= population_split:
-        model += (
-            lpSum(assignment[i][j] for j in range(n_districts)) <= 1,
-            "Unique Assignment " + str(i),
-        )
-    else:
-        model += (
-            lpSum(assignment[i][j] for j in range(n_districts)) <= 2,
-            "Up-to-two Assignments " + str(i),
-        )
+    # if county_populations[i] <= population_split:
+    model += (
+        lpSum(assignment[i][j] for j in range(n_districts)) <= 1,
+        "Unique Assignment " + str(i),
+    )
+# else:
+#     model += (
+#         lpSum(assignment[i][j] for j in range(n_districts)) <= 2,
+#         "Up-to-two Assignments " + str(i),
+#     )
 
-model.solve(GLPK_CMD(options=["--mipgap", "0.055", "--gomory"]))
+model.solve()
 print("The model status is: ", LpStatus[model.status])
 print("The objective value is: ", value(objective_function))
 
