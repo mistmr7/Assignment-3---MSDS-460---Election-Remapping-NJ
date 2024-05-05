@@ -16,6 +16,7 @@ from plotnine import (
     theme_minimal,
     theme,
 )
+from icecream import ic
 
 # Assign arbitrary county IDs
 county_id = np.arange(0, 21)
@@ -698,10 +699,12 @@ x_0 = pulp.LpVariable.dicts(
     ((a, b) for a in range(num_counties) for b in range(num_counties)),
     cat="Binary",
 )
+ic(x)
+# ic(x_0)
 
 # The Decision Variable is the deviation from mean population
 pop_deviation = pulp.LpVariable("d", lowBound=0)
-
+print(pop_deviation)
 model += pulp.lpSum(
     pop_deviation
 )  # Objective function: minimize deviation from population mean of all districts (total population / 12)
@@ -721,20 +724,20 @@ for a in range(num_counties):
         if (
             adjacency_matrix[str(a)][str(b)] == 1
         ):  # Check if counties a and b are adjacent
+            print((str(a), str(b)))
             for j in range(num_districts):
                 model += (
-                    x_0[(a, b)] >= x[(a, j)] - x[(b, j)]
+                    x[(a, b)] >= x[(a, j)] - x[(b, j)]
                 )  # Constraint: x_0ab >= xa_j - xb_j
                 model += (
                     x_0[(a, b)] >= x[(b, j)] - x[(a, j)]
                 )  # Constraint: x_0ab >= xb_j - xa_j
             model += x_0[(a, b)] <= pulp.lpSum(
-                x[(a, j)] for j in range(num_districts)
+                x[(a, k)] for k in range(num_districts)
             )  # Constraint: x_0ab <= sum(xa_j)
             model += x_0[(a, b)] <= pulp.lpSum(
-                x[(b, j)] for j in range(num_districts)
+                x[(b, k)] for k in range(num_districts)
             )  # Constraint: x_0ab <= sum(xb_j)
-
 min_dist = 65000
 max_dist = 6828819
 # District size constraints, in order to keep the size of districts within a specific range from the mean population

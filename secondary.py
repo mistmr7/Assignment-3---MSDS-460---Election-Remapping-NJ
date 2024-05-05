@@ -266,7 +266,7 @@ for i in range(n_counties):
             "Allocation assignment " + str(i) + " " + str(j),
         )
 
-
+"""
 for j in range(n_districts):
     # Atlantic County borders Burlington[2], Camden[3], Cape May[4], Cumberland[5], Gloucester[7], and Ocean[14]
     model += (
@@ -386,7 +386,7 @@ for j in range(n_districts):
     model += (
         assignment[20][j] <= assignment[9][j] + assignment[13][j] + assignment[18][j]
     )
-
+"""
 
 # District size constraints, in order to keep the size of districts by population similar
 for j in range(n_districts):
@@ -413,7 +413,7 @@ for i in range(n_counties):  # added
 #         "Up-to-two Assignments " + str(i),
 #     )
 
-model.solve(GLPK_CMD())
+model.solve()
 print("The model status is: ", LpStatus[model.status])
 print("The objective value is: ", value(objective_function))
 
