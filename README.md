@@ -8,37 +8,31 @@ The goal of this project is to develop mathematical models to assist in the redi
 We present two distinct models for redistricting: a primary model based on an existing redistricting model developed for Oregon, and an alternate model integrating concepts from two political redistricting articles. The standard form for our primary model is as follows:
 
 **Index Sets:**
-- \( i \): County index (21 counties)
-- \( j \): District index (12 districts)
-- \( k \): Additional county index for adjacency matrix
+- i: County index (21 counties)
+- j: District index (12 districts)
+- k: Additional county index for adjacency matrix
 
 **Data:**
-- \( P_i \): Population in county \( i \)
-- \( L \): Lower population limit for each district
-- \( U \): Upper population limit for each district
-- \( A_{ik} \): Adjacency matrix indicating whether county \( i \) borders county \( k \) (binary)
-- \( M \): Large arbitrary number
+- Pi: Population in county i
+- L: Lower population limit for each district
+- U: Upper population limit for each district
+- Aik: Adjacency matrix indicating whether county i borders county k (binary)
+- M: Large arbitrary number
 
 **Decision Variables:**
-- \( Y_{ij} \): Binary variable representing whether county \( i \) is assigned to district \( j \)
-- \( X_{ij} \): Integer variable representing the population allocated from county \( i \) to district \( j \)
+- Yij: Binary variable representing whether county i is assigned to district j
+- Xij: Integer variable representing the population allocated from county i to district j
 
 **Objective Function:**
-\[ \text{Minimize} \sum_{i,j} Y_{ij} \]
+Minimize Σ Σ Yij (minimize the total number of county-to-district assignments)
 
-**Subject to:**
-1. **Population Allocation:**
-\[ \sum_j X_{ij} = P_i \quad \forall i \]
-2. **Assignment Requirement:**
-\[ X_{ij} \leq M \cdot Y_{ij} \quad \forall i \]
-3. **Single Assignment:**
-\[ \sum_j Y_{ij} \leq 1 \quad \forall i \]
-4. **Population Limits:**
-\[ L \leq \sum_i X_{ij} \leq U \quad \forall j \]
-5. **Adjacency Constraint:**
-\[ Y_{ij} \leq \sum_k A_{ik} \cdot Y_{kj} \quad \forall i, j, k \]
-6. **Non-negativity Constraint:**
-\[ X_{ij}, Y_{ij} \geq 0 \quad \forall i, j \]
+**Constraints:**
+1. Σj Xij = Pi ∀ i (allocate 100% of county populations to districts)
+2. Xij ≤ M ⋅ Yij ∀ i (assignment required for population allocation)
+3. Σj Yij ≤ 1 ∀ i (each county must be assigned to one district)
+4. L ≤ Σi Xij ≤ U ∀ j (each district must be within population limits)
+5. Yij ≤ Σ Aik ⋅ Ykj ∀ i, j, k (adjacency constraint)
+6. Xij, Yij ≥ 0 ∀ i, j (non-negativity constraint)
 
 ## Programming
 We implemented our models using Python's PuLP package, leveraging various solvers including GLPK, CBC, and PuLP's built-in solver. The code files and output files are available in the repository, along with image files depicting mapped distributions of counties to districts based on model solutions.
