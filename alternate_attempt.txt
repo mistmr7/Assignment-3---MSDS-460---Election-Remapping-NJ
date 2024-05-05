@@ -1,0 +1,57 @@
+Result - Optimal solution found
+
+Objective value:                0.00000000
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             0.21
+Time (Wallclock seconds):       0.21
+
+Option for printingOptions changed from normal to all
+Total time (CPU seconds):       0.23   (Wallclock seconds):       0.23
+...
+
+District 1:
+  Monmouth
+Population: 641370
+District 2:
+  Gloucester
+Population: 310079
+District 3:
+  Sussex
+Population: 146689
+District 4:
+  Hunterdon
+Population: 130561
+District 5:
+  Passaic
+Population: 513156
+District 6:
+  Salem
+Population: 65519
+District 7:
+  Somerset
+Population: 350637
+District 8:
+  Atlantic
+  Burlington
+  Camden
+  Cape May
+  Cumberland
+  Hudson
+Population: 2232703
+District 9:
+  Bergen
+  Middlesex
+Population: 1828084
+District 10:
+  Ocean
+Population: 662731
+District 11:
+  Warren
+Population: 111601
+District 12:
+  Essex
+  Mercer
+  Morris
+  Union
+Population: 2327735

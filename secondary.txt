@@ -1,0 +1,75 @@
+Result - Optimal solution found
+
+Objective value:                21.00000000
+Enumerated nodes:               12
+Total iterations:               531
+Time (CPU seconds):             1.40
+Time (Wallclock seconds):       1.40
+
+Option for printingOptions changed from normal to all
+Total time (CPU seconds):       1.44   (Wallclock seconds):       1.44
+...
+
+County Assignments		     County Population Allocated
+County 0 assigned to district 1:     275044.0
+District Population: 657607.0
+
+County 1 assigned to district 0:     961932.0
+District Population: 961932.0
+
+County 2 assigned to district 7:     472233.0
+District Population: 782312.0
+
+County 3 assigned to district 4:     529743.0
+District Population: 880380.0
+
+County 4 assigned to district 11:    93815.0
+District Population: 611442.0
+
+County 5 assigned to district 2:     153305.0
+District Population: 816036.0
+
+County 6 assigned to district 10:    852510.0
+District Population: 918029.0
+
+County 7 assigned to district 7:     310079.0
+District Population: 782312.0
+
+County 8 assigned to district 8:     708563.0
+District Population: 708563.0
+
+County 9 assigned to district 9:     130561.0
+District Population: 755318.0
+
+County 10 assigned to district 1:    382563.0
+District Population: 657607.0
+
+County 11 assigned to district 5:    866152.0
+District Population: 866152.0
+
+County 12 assigned to district 3:    641370.0
+District Population: 641370.0
+
+County 13 assigned to district 11:   517627.0
+District Population: 611442.0
+
+County 14 assigned to district 2:    662731.0
+District Population: 816036.0
+
+County 15 assigned to district 9:    513156.0
+District Population: 755318.0
+
+County 16 assigned to district 10:   65519.0
+District Population: 918029.0
+
+County 17 assigned to district 4:    350637.0
+District Population: 880380.0
+
+County 18 assigned to district 6:    146689.0
+District Population: 721724.0
+
+County 19 assigned to district 6:    575035.0
+District Population: 721724.0
+
+County 20 assigned to district 9:    111601.0
+District Population: 755318.0
