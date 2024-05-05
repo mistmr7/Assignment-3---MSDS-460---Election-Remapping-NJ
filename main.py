@@ -1,7 +1,6 @@
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-import glpk
 
 pd.set_option("display.max_rows", 50)
 pd.set_option("display.max_columns", None)
@@ -32,7 +31,6 @@ from pulp import (
     listSolvers,
 )
 
-print(listSolvers(onlyAvailable=True))
 # Arbitrary County IDs
 county_id = np.arange(0, 21)
 
@@ -229,8 +227,8 @@ variable_names = [
 # print(variable_names)
 
 # population_split = 130000
-min_dist = 522554
-max_dist = 970923
+min_dist = 65000
+max_dist = 6828819
 
 
 # Create the model and choose whether to minimize or maximize
@@ -239,14 +237,11 @@ model = LpProblem("Supply-Demand-Problem", LpMinimize)
 # Declare Variables
 # The Decision Variable is 1 if the county is assigned to the district.
 DV_variable_y = LpVariable.matrix("Y", variable_names, cat="Binary")
-print(DV_variable_y)
 assignment = np.array(DV_variable_y).reshape(21, 12)
 
 # The Decision Variable is the population allocated to the district.
 DV_variable_x = LpVariable.matrix("X", variable_names, cat="Integer", lowBound=0)
 allocation = np.array(DV_variable_x).reshape(21, 12)
-print(allocation)
-print(assignment)
 # Write the objective
 objective_function = lpSum(assignment)
 model += objective_function
@@ -269,6 +264,7 @@ for i in range(n_counties):
             "Allocation assignment " + str(i) + " " + str(j),
         )
 
+"""
 for j in range(n_districts):
     # Atlantic County borders Burlington[2], Camden[3], Cape May[4], Cumberland[5], Gloucester[7], and Ocean[14]
     model += (
@@ -388,7 +384,7 @@ for j in range(n_districts):
     model += (
         assignment[20][j] <= assignment[9][j] + assignment[13][j] + assignment[18][j]
     )
-
+"""
 
 # District size constraints, in order to keep the size of districts by population similar
 for j in range(n_districts):
@@ -429,6 +425,7 @@ for i in range(n_counties):
 
 # Prepare data for visualizing the results
 result_value = []
+
 for i in range(n_counties):
     for j in range(n_districts):
         var_output = {
@@ -438,7 +435,6 @@ for i in range(n_counties):
             "Allocation": allocation[i][j].value(),
         }
         result_value.append(var_output)
-
 results = pd.DataFrame(result_value)
 results = results[results["Assignment"] != 0]
 results = results.sort_values(["County", "District"])
@@ -459,19 +455,20 @@ for i in range(0, len(results)):
 results = results.sort_values(["District", "County_Name"])
 results.index = results["County_ID"]
 
+
 color_dict = {
-    1: "khaki",
-    2: "pink",
-    3: "mediumaquamarine",
-    4: "plum",
-    5: "paleturquoise",
-    6: "lightcoral",
-    7: "orange",
+    1: "lightpink",
+    2: "darkorchid",
+    3: "lavender",
+    4: "chartreuse",
+    5: "dodgerblue",
+    6: "paleturquoise",
+    7: "tan",
     8: "yellow",
     9: "red",
     10: "blue",
     11: "green",
-    12: "grey",
+    12: "slategrey",
 }
 
 
@@ -485,7 +482,7 @@ def nj_map(map_data):
         ggplot(map_data)
         + geom_map(aes(fill=str("Assignment")))
         + geom_label(
-            aes(x="Longitude", y="Latitude", label="Population2020e", size=2),
+            aes(x="Longitude", y="Latitude", label="Population", size=2),
             show_legend=False,
         )
         + theme_minimal()
@@ -562,4 +559,7 @@ map_first_pass_labels["Assignment"] = map_first_pass_labels["Assignment"].astype
     "category"
 )
 
-nj_map(map_first_pass_labels)
+plot1, plot2, plot3 = nj_map(map_first_pass_labels)
+plot1.show()
+plot2.show()
+plot3.show()
